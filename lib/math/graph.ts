@@ -1,4 +1,3 @@
-import { draw_circle, draw_segment } from "../draw.utils";
 import { Point } from "../primitive/point";
 import { Segment } from "../primitive/segment";
 
@@ -68,5 +67,10 @@ export class Graph {
     for (const point of this.points) {
       point.draw(ctx);
     }
+  }
+
+  dispose() {
+    this.points.length = 0;
+    this.segments.length = 0;
   }
 }

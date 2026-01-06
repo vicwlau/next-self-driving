@@ -49,6 +49,12 @@ export default function ActionBar({ canvas, ctx, graph }: ActionBarProps) {
     refresh_graph();
   }
 
+  function remove_all() {
+    if (!canvas || !ctx || !graph) return;
+    graph.dispose();
+    refresh_graph();
+  }
+
   function refresh_graph() {
     if (!canvas || !ctx || !graph) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -64,6 +70,9 @@ export default function ActionBar({ canvas, ctx, graph }: ActionBarProps) {
       </Button>
       <Button onClick={remove_point} className="bg-red-600">
         remove point
+      </Button>
+      <Button onClick={remove_all} className="bg-red-800">
+        remove all
       </Button>
     </div>
   );
