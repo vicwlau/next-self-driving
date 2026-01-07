@@ -12,9 +12,11 @@ export class GraphEditor implements BaseObject {
 
   mouse_input: MouseInput;
 
+  is_dragging: boolean = false;
+
   selected_point: Point | null = null;
   hovered_point: Point | null = null;
-  is_dragging: boolean = false;
+  intent_segment: Segment | null = null;
 
   constructor(canvas: HTMLCanvasElement, graph: Graph) {
     this.canvas = canvas;
@@ -62,6 +64,9 @@ export class GraphEditor implements BaseObject {
     this.clear();
     this.graph.draw(this.ctx);
 
+    if (this.intent_segment && !this.is_dragging)
+      this.intent_segment.draw(this.ctx, { color: "blue", dashed: true });
+
     if (this.selected_point)
       this.selected_point.draw(this.ctx, {
         radius: 8,
@@ -95,6 +100,8 @@ export class GraphEditor implements BaseObject {
       this.selected_point.x = point.x;
       this.selected_point.y = point.y;
     }
+
+    this.update_intent_segment(point);
   }
 
   handle_mouse_down(point: Point, evt: MouseEvent): void {
@@ -103,24 +110,13 @@ export class GraphEditor implements BaseObject {
     // left click
     if (evt.button === 0) {
       if (this.hovered_point) {
-        // connect segment
-        if (this.selected_point)
-          this.graph.try_add_segment(
-            new Segment(this.selected_point, this.hovered_point)
-          );
-        // selection
-        else this.selected_point = this.hovered_point;
+        this.select_and_draw_segment(this.hovered_point);
       }
       // create point and segment
       else {
         const success = this.graph.try_add_point(point);
         if (success) {
-          // create segment if there's previously created point
-          if (this.selected_point)
-            this.graph.try_add_segment(new Segment(point, this.selected_point));
-
-          // assign selection to new point
-          this.selected_point = point;
+          this.select_and_draw_segment(point);
         }
       }
     }
@@ -129,16 +125,48 @@ export class GraphEditor implements BaseObject {
     else if (evt.button === 2) {
       // remove point
       if (this.hovered_point) {
-        const is_selected = this.hovered_point.equals(this.selected_point);
-        this.graph.remove_point(this.hovered_point);
-        this.hovered_point = null;
-
-        if (is_selected) this.selected_point = null;
+        this.remove_point(this.hovered_point);
       }
       // deselect
       else {
         this.selected_point = null;
       }
+    }
+  }
+
+  private select_and_draw_segment(point: Point) {
+    // has selection, then connect segment
+    if (this.selected_point)
+      this.graph.try_add_segment(new Segment(this.selected_point, point));
+
+    this.selected_point = point;
+  }
+
+  private remove_point(point: Point) {
+    this.graph.remove_point(point);
+    this.hovered_point = null;
+    if (this.selected_point?.equals(point)) {
+      this.selected_point = null;
+    }
+  }
+
+  private update_intent_segment(mouse_point: Point) {
+    if (this.selected_point) {
+      // in selection, mode: snap to existing point
+      if (this.hovered_point) {
+        this.intent_segment = new Segment(
+          this.hovered_point,
+          this.selected_point
+        );
+      }
+      // in selection, mode: draw segment from selected point
+      else {
+        this.intent_segment = new Segment(this.selected_point, mouse_point);
+      }
+    }
+    // not in selection mode: draw nothing
+    else {
+      this.intent_segment = null;
     }
   }
 }

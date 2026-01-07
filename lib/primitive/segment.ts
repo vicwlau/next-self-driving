@@ -1,25 +1,26 @@
-import { draw_segment } from "../draw.utils";
+import { draw_segment, DrawSegmentParams } from "../draw.utils";
 import { Point } from "./point";
 
 export class Segment {
   p1: Point;
   p2: Point;
 
-  constructor(p1: Point | null, p2: Point | null) {
-    if (!p1 || !p2) throw new Error("null points");
+  constructor(p1: Point, p2: Point) {
     if (p1.equals(p2)) {
-      throw new Error("A segment cannot have identical endpoints.");
+      const msg = "A segment cannot have identical endpoints";
+      throw new Error(msg);
+      // console.warn("A segment cannot have identical endpoints.");
     }
+
     this.p1 = p1;
     this.p2 = p2;
   }
 
   draw(
     ctx: CanvasRenderingContext2D,
-    width: number = 2,
-    color: string = "blue"
+    options: Omit<DrawSegmentParams, "segment">
   ) {
-    draw_segment(ctx, this, width, color);
+    draw_segment(ctx, { segment: this, ...options });
   }
 
   equals(other: Segment): boolean {
@@ -28,5 +29,9 @@ export class Segment {
 
   includes(point: Point): boolean {
     return this.p1.equals(point) || this.p2.equals(point);
+  }
+
+  get is_valid(): boolean {
+    return !this.p1.equals(this.p2);
   }
 }

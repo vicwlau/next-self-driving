@@ -10,6 +10,8 @@ build 3d world editor, road system, machine learning, and expertise in javascrip
 - state for `hovered` and `selected` states
 - separation of `graph` and `graph-editor` and `point` when rendering.
 - drag move points
+- intent line for connecting segments or drawing a new point with connected segment
+- zoom | drag | pan,
 
 # learnings
 
@@ -31,3 +33,7 @@ remove_segment(segment: Segment) {
 ```
 
 # bugs
+
+## point had vect2
+
+modification of x and y on point was doing nothing because it uses vect2 to draw. removed duplicative data points.

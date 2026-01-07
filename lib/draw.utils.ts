@@ -1,18 +1,26 @@
 import { Segment } from "./primitive/segment";
 import { Vec2 } from "./types";
 
+export interface DrawSegmentParams {
+  segment: Segment;
+  color?: string;
+  line_width?: number;
+  dashed?: boolean;
+}
 export function draw_segment(
   ctx: CanvasRenderingContext2D,
-  segment: Segment,
-  width: number = 2,
-  color: string = "black"
+  params: DrawSegmentParams
 ) {
+  const { color = "black", segment, line_width = 2, dashed = false } = params;
+
   ctx.beginPath();
-  ctx.lineWidth = width;
+  ctx.lineWidth = line_width;
   ctx.strokeStyle = color;
+  if (dashed) ctx.setLineDash([3, 3]);
   ctx.moveTo(segment.p1.x, segment.p1.y);
   ctx.lineTo(segment.p2.x, segment.p2.y);
   ctx.stroke();
+  ctx.setLineDash([]);
 }
 
 export interface DrawCircleParams {
