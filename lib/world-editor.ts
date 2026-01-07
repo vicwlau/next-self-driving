@@ -1,3 +1,4 @@
+import { GraphEditor } from "./graph-editor";
 import { Graph } from "./math/graph";
 import { Point } from "./primitive/point";
 import { Segment } from "./primitive/segment";
@@ -7,6 +8,7 @@ export class WorldEditor {
   ctx: CanvasRenderingContext2D;
 
   graph: Graph;
+  graph_editor: GraphEditor;
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -26,6 +28,8 @@ export class WorldEditor {
     const s3 = new Segment(p3, p4);
 
     this.graph = new Graph([p1, p2, p3, p4], [s1, s2, s3]);
-    this.graph.draw(this.ctx);
+
+    this.graph_editor = new GraphEditor(canvas, this.graph);
+    this.graph_editor.start(); // Start the graph editor loop
   }
 }

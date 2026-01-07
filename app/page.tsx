@@ -11,10 +11,20 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    /*
+      MAIN STARTS
+    */
     if (!canvas_ref.current) return;
+
     ctx.current = canvas_ref.current.getContext("2d");
     world_editor.current ??= new WorldEditor(canvas_ref.current!);
+
     setLoaded(true);
+
+    return () => {};
+    /*
+      MAIN ENDS
+    */
   }, []);
 
   return (
