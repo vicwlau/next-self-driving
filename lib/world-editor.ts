@@ -16,6 +16,9 @@ export class WorldEditor implements BaseObject {
   graph_editor: GraphEditor;
   graph: Graph;
 
+  private animation_id = 0;
+  private drag_start_offset: Point = new Point(0, 0);
+
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
@@ -43,28 +46,84 @@ export class WorldEditor implements BaseObject {
 
   start() {
     // assign delegates before start
-    this.mouse_input.delegate_mouseup = () => {
-      this.graph_editor.handle_mouse_up();
-    };
+    this.mouse_input.delegate_mouseup = () => {};
 
     this.mouse_input.delegate_mousemove = (coords, evt) => {
-      const point = this.view_port.get_world_point(evt);
-      this.graph_editor.handle_mouse_move(point);
+      const world_point = this.view_port.get_world_point(evt);
+      this.graph_editor.handle_mouse_move(world_point);
     };
 
     this.mouse_input.delegate_mousedown = (coords, evt) => {
-      const point = this.view_port.get_world_point(evt);
-      this.graph_editor.handle_mouse_down(point, evt);
+      const world_point = this.view_port.get_world_point(evt);
+      this.graph_editor.handle_mouse_down(world_point, evt);
+    };
+
+    this.mouse_input.delegate_mousewheel = (evt: WheelEvent) => {
+      this.view_port.handle_mousewheel(evt);
+    };
+
+    this.drag_input.onStart = (start) => {
+      this.drag_start_offset = new Point(
+        this.view_port.offset.x,
+        this.view_port.offset.y
+      );
+
+      this.graph_editor.is_dragging = true;
+    };
+
+    this.drag_input.onMove = (current, evt) => {
+      // right drag => pan camera
+      if (evt.buttons === 2) {
+        const dx = current.x - (this.drag_input.origin?.x || 0);
+        const dy = current.y - (this.drag_input.origin?.y || 0);
+        this.view_port.offset.x =
+          this.drag_start_offset.x + dx * this.view_port.zoom;
+        this.view_port.offset.y =
+          this.drag_start_offset.y + dy * this.view_port.zoom;
+      }
+
+      // left drag => move point
+      else if (evt.buttons === 1) {
+        const world_point = this.view_port.get_world_point(evt);
+        this.graph_editor.handle_mouse_drag(world_point);
+      }
+    };
+    this.drag_input.onEnd = (drag) => {
+      this.graph_editor.is_dragging = false;
     };
 
     this.mouse_input.start();
+    this.drag_input.start();
     this.view_port.start();
     this.graph_editor.start();
+
+    // start loop
+    if (this.animation_id !== 0) return; // Already started
+    this.loop();
+  }
+
+  loop = () => {
+    this.update();
+    this.animation_id = requestAnimationFrame(this.loop);
+  };
+
+  update() {
+    this.clear();
+    this.ctx.save();
+    this.ctx.scale(1 / this.view_port.zoom, 1 / this.view_port.zoom);
+    this.ctx.translate(this.view_port.offset.x, this.view_port.offset.y);
+    this.graph_editor.update();
+    this.ctx.restore();
   }
 
   dispose(): void {
     this.mouse_input.dispose();
+    this.drag_input.dispose();
     this.view_port.dispose();
     this.graph_editor.dispose();
+  }
+
+  clear(): void {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }

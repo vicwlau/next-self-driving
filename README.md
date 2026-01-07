@@ -38,3 +38,18 @@ remove_segment(segment: Segment) {
 ## point had vect2
 
 modification of x and y on point was doing nothing because it uses vect2 to draw. removed duplicative data points.
+
+## panning
+
+```tsx
+// what is this?
+if ((evt.buttons & 2) !== 0) {
+}
+
+get_world_point(e: MouseEvent) {
+    return new Point(
+      e.offsetX * this.zoom - this.offset.x, // why substract from this.offset.x
+      e.offsetY * this.zoom - this.offset.y
+    );
+  }
+```

@@ -2,36 +2,26 @@ import { Point } from "./primitive/point";
 
 export class ViewPort implements BaseObject {
   canvas: HTMLCanvasElement;
-  abort_controller: AbortController | null = null;
 
   zoom: number = 1;
+  offset = new Point(0, 0);
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
   }
 
-  start(): void {
-    if (this.abort_controller) this.dispose();
-    this.abort_controller = new AbortController();
-    const { signal } = this.abort_controller;
+  start(): void {}
 
-    this.canvas.addEventListener("wheel", (e) => this.handle_mousewheel(e), {
-      signal,
-    });
-  }
-
-  dispose(): void {
-    if (this.abort_controller) {
-      this.abort_controller.abort();
-      this.abort_controller = null;
-    }
-  }
+  dispose(): void {}
 
   get_world_point(e: MouseEvent) {
-    return new Point(e.offsetX * this.zoom, e.offsetY * this.zoom);
+    return new Point(
+      e.offsetX * this.zoom - this.offset.x,
+      e.offsetY * this.zoom - this.offset.y
+    );
   }
 
-  private handle_mousewheel(e: WheelEvent) {
+  handle_mousewheel(e: WheelEvent) {
     const dir = Math.sign(e.deltaY);
     const step = 0.1;
     this.zoom += dir * step;

@@ -1,15 +1,12 @@
 import { Graph } from "./math/graph";
 import { get_nearest_point } from "./math/utils";
-import { MouseInput } from "./core/mouse-input";
 import { Point } from "./primitive/point";
 import { Segment } from "./primitive/segment";
-import { ViewPort } from "./view-port";
 
 export class GraphEditor implements BaseObject {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   graph: Graph;
-  animation_id: number = 0;
 
   is_dragging: boolean = false;
 
@@ -23,29 +20,15 @@ export class GraphEditor implements BaseObject {
     if (!context) {
       throw new Error("Failed to get 2D context");
     }
-    this.ctx = context;
 
+    this.ctx = context;
     this.graph = graph;
   }
 
-  start(): void {
-    if (this.animation_id !== 0) return; // Already started
-
-    this.loop();
-  }
-
-  dispose(): void {
-    cancelAnimationFrame(this.animation_id);
-    this.animation_id = 0;
-  }
-
-  loop = () => {
-    this.update();
-    this.animation_id = requestAnimationFrame(this.loop);
-  };
+  start(): void {}
+  dispose(): void {}
 
   update(): void {
-    this.clear();
     this.graph.draw(this.ctx);
 
     if (this.intent_segment && !this.is_dragging)
@@ -68,29 +51,20 @@ export class GraphEditor implements BaseObject {
       });
   }
 
-  clear(): void {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  handle_mouse_up(): void {
-    this.is_dragging = false;
-  }
-
   handle_mouse_move(point: Point): void {
     this.hovered_point = get_nearest_point(point, this.graph.points);
+    this.update_intent_segment(point);
+  }
 
-    if (this.is_dragging && this.selected_point) {
+  handle_mouse_drag(point: Point) {
+    if (this.selected_point) {
       this.hovered_point = null;
       this.selected_point.x = point.x;
       this.selected_point.y = point.y;
     }
-
-    this.update_intent_segment(point);
   }
 
   handle_mouse_down(point: Point, evt: MouseEvent): void {
-    this.is_dragging = true;
-
     // left click
     if (evt.button === 0) {
       if (this.hovered_point) {

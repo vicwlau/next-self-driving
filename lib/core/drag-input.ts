@@ -1,12 +1,18 @@
-export interface MouseCoords {
+export interface Point2D {
   x: number;
   y: number;
 }
 
-export interface DragRecord {
-  start_pos: MouseCoords;
-  end_pos: MouseCoords;
-  drag_distance: number;
+export interface DragOffset {
+  dx: number;
+  dy: number;
+  distance: number;
+}
+
+export interface DragState {
+  orign: Point2D;
+  end: Point2D;
+  distance: number;
 }
 
 export class DragInput {
@@ -15,17 +21,17 @@ export class DragInput {
   private abort_controller: AbortController | null = null;
 
   // history
-  last_drag_data: DragRecord | null = null;
+  last_drag_state: DragState | null = null;
 
   // current states
-  private current_pos: MouseCoords | null = null;
-  private start_pos: MouseCoords | null = null;
-  private drag_distance: number | null = null;
+  current: Point2D | null = null;
+  origin: Point2D | null = null;
+  distance: number | null = null;
 
   // callbacks
-  callback_on_drag_start?: (start: MouseCoords) => void;
-  callback_on_drag_update?: (current_pos: MouseCoords) => void;
-  callback_on_drag_end?: (drag: DragRecord) => void;
+  onStart?: (origin: Point2D, evt: MouseEvent) => void;
+  onMove?: (current: Point2D, evt: MouseEvent) => void;
+  onEnd?: (drag_state: DragState, evt: MouseEvent) => void;
 
   constructor(canvas: HTMLCanvasElement) {
     this.base_element = canvas;
@@ -38,6 +44,7 @@ export class DragInput {
     this.abort_controller = new AbortController();
     const { signal } = this.abort_controller;
 
+    // critical
     this.add_event_listeners(signal);
   }
 
@@ -48,50 +55,52 @@ export class DragInput {
     }
   }
 
-  private start_drag(start_pos: MouseCoords) {
-    this.start_pos = start_pos;
-    this.current_pos = start_pos;
-    this.drag_distance = 0;
+  private start_drag(origin: Point2D, evt: MouseEvent) {
+    this.origin = origin;
+    this.current = origin;
+    this.distance = 0;
 
-    if (this.callback_on_drag_start) {
-      this.callback_on_drag_start({ ...start_pos });
+    if (this.onStart) {
+      this.onStart({ ...origin }, evt);
     }
   }
 
-  private update_drag(current_pos: MouseCoords) {
-    if (!this.start_pos) return;
+  private move_drag(current: Point2D, evt: MouseEvent) {
+    if (!this.origin) return;
 
-    this.current_pos = current_pos;
-    this.drag_distance = this.get_distance(this.start_pos, current_pos);
+    this.current = current;
+    this.distance = this.get_distance(this.origin, current);
 
-    if (this.callback_on_drag_update)
-      this.callback_on_drag_update({ ...current_pos });
+    if (this.onMove) this.onMove({ ...current }, evt);
   }
 
-  private end_drag(end_pos: MouseCoords) {
-    if (!this.start_pos) return;
+  private end_drag(end: Point2D, evt: MouseEvent) {
+    if (!this.origin) return;
 
-    const distance = this.get_distance(this.start_pos, end_pos);
+    const distance = this.get_distance(this.origin, end);
 
-    this.last_drag_data = {
-      start_pos: { ...this.start_pos },
-      end_pos: { ...end_pos },
-      drag_distance: distance,
+    this.last_drag_state = {
+      orign: { ...this.origin },
+      end: { ...end },
+      distance: distance,
     };
 
-    if (this.callback_on_drag_end)
+    if (this.onEnd)
       // deep copy
-      this.callback_on_drag_end({
-        start_pos: { ...this.last_drag_data.start_pos },
-        end_pos: { ...this.last_drag_data.end_pos },
-        drag_distance: distance,
-      });
+      this.onEnd(
+        {
+          orign: { ...this.last_drag_state.orign },
+          end: { ...this.last_drag_state.end },
+          distance: distance,
+        },
+        evt
+      );
 
-    this.start_pos = null;
-    this.current_pos = null;
+    this.origin = null;
+    this.current = null;
   }
 
-  private get_distance(p1: MouseCoords, p2: MouseCoords) {
+  private get_distance(p1: Point2D, p2: Point2D) {
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
 
@@ -99,7 +108,7 @@ export class DragInput {
   }
 
   is_dragging() {
-    return this.current_pos !== null;
+    return this.current !== null;
   }
 
   private add_event_listeners(signal: AbortSignal) {
@@ -124,22 +133,14 @@ export class DragInput {
     return { x: e.offsetX, y: e.offsetY };
   }
   private handle_mouseup(e: MouseEvent): void {
-    this.end_drag(this.get_coords(e));
+    this.end_drag(this.get_coords(e), e);
   }
 
   private handle_mousedown(e: MouseEvent): void {
-    if (e.button === 0)
-      // restrict to left click only
-      this.start_drag(this.get_coords(e));
+    this.start_drag(this.get_coords(e), e);
   }
 
   private handle_mousemove(e: MouseEvent): void {
-    // check buttons pressed `button*s*`; this returns value
-    if (this.start_pos && e.buttons === 0) {
-      this.end_drag(this.get_coords(e));
-      return;
-    }
-
-    this.update_drag(this.get_coords(e));
+    this.move_drag(this.get_coords(e), e);
   }
 }
