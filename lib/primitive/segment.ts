@@ -5,7 +5,8 @@ export class Segment {
   p1: Point;
   p2: Point;
 
-  constructor(p1: Point, p2: Point) {
+  constructor(p1: Point | null, p2: Point | null) {
+    if (!p1 || !p2) throw new Error("null points");
     if (p1.equals(p2)) {
       throw new Error("A segment cannot have identical endpoints.");
     }

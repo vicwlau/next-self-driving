@@ -2,6 +2,7 @@ import { Graph } from "./math/graph";
 import { get_nearest_point } from "./math/utils";
 import { MouseInput } from "./mouse-input";
 import { Point } from "./primitive/point";
+import { Segment } from "./primitive/segment";
 
 export class GraphEditor implements BaseObject {
   canvas: HTMLCanvasElement;
@@ -31,7 +32,7 @@ export class GraphEditor implements BaseObject {
 
     // assign delegates before start
     this.mouse_input.delegate_mouseup = (coords, evt) => {
-      this.handle_mouse_up(new Point(coords.x, coords.y), evt);
+      this.handle_mouse_up();
     };
 
     this.mouse_input.delegate_mousemove = (coords) => {
@@ -82,7 +83,7 @@ export class GraphEditor implements BaseObject {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  handle_mouse_up(point: Point, evt: MouseEvent): void {
+  handle_mouse_up(): void {
     this.is_dragging = false;
   }
 
@@ -99,8 +100,34 @@ export class GraphEditor implements BaseObject {
   handle_mouse_down(point: Point, evt: MouseEvent): void {
     this.is_dragging = true;
 
+    // left click
+    if (evt.button === 0) {
+      if (this.hovered_point) {
+        // connect segment
+        if (this.selected_point)
+          this.graph.try_add_segment(
+            new Segment(this.selected_point, this.hovered_point)
+          );
+        // selection
+        else this.selected_point = this.hovered_point;
+      }
+      // create point and segment
+      else {
+        const success = this.graph.try_add_point(point);
+        if (success) {
+          // create segment if there's previously created point
+          if (this.selected_point)
+            this.graph.try_add_segment(new Segment(point, this.selected_point));
+
+          // assign selection to new point
+          this.selected_point = point;
+        }
+      }
+    }
+
     // right click
-    if (evt.button === 2) {
+    else if (evt.button === 2) {
+      // remove point
       if (this.hovered_point) {
         const is_selected = this.hovered_point.equals(this.selected_point);
         this.graph.remove_point(this.hovered_point);
@@ -108,12 +135,10 @@ export class GraphEditor implements BaseObject {
 
         if (is_selected) this.selected_point = null;
       }
-    }
-    // left click
-    else if (evt.button === 0) {
-      this.selected_point = get_nearest_point(point, this.graph.points);
-      // no point selected with min. threshold, then add point
-      if (!this.selected_point) this.graph.try_add_point(point);
+      // deselect
+      else {
+        this.selected_point = null;
+      }
     }
   }
 }
