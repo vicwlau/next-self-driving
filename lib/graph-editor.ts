@@ -3,14 +3,13 @@ import { get_nearest_point } from "./math/utils";
 import { MouseInput } from "./core/mouse-input";
 import { Point } from "./primitive/point";
 import { Segment } from "./primitive/segment";
+import { ViewPort } from "./view-port";
 
 export class GraphEditor implements BaseObject {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
   graph: Graph;
   animation_id: number = 0;
-
-  mouse_input: MouseInput;
 
   is_dragging: boolean = false;
 
@@ -20,39 +19,24 @@ export class GraphEditor implements BaseObject {
 
   constructor(canvas: HTMLCanvasElement, graph: Graph) {
     this.canvas = canvas;
-    const context = canvas.getContext("2d");
+    const context = this.canvas.getContext("2d");
     if (!context) {
       throw new Error("Failed to get 2D context");
     }
     this.ctx = context;
+
     this.graph = graph;
-    this.mouse_input = new MouseInput(canvas, { is_remove_context_menu: true });
   }
 
   start(): void {
     if (this.animation_id !== 0) return; // Already started
 
-    // assign delegates before start
-    this.mouse_input.delegate_mouseup = (coords, evt) => {
-      this.handle_mouse_up();
-    };
-
-    this.mouse_input.delegate_mousemove = (coords) => {
-      this.handle_mouse_move(new Point(coords.x, coords.y));
-    };
-
-    this.mouse_input.delegate_mousedown = (coords, evt) => {
-      this.handle_mouse_down(new Point(coords.x, coords.y), evt);
-    };
-
-    this.mouse_input.start();
     this.loop();
   }
 
   dispose(): void {
     cancelAnimationFrame(this.animation_id);
     this.animation_id = 0;
-    this.mouse_input.dispose();
   }
 
   loop = () => {
@@ -150,7 +134,7 @@ export class GraphEditor implements BaseObject {
     }
   }
 
-  private update_intent_segment(mouse_point: Point) {
+  private update_intent_segment(point: Point) {
     if (this.selected_point) {
       // in selection, mode: snap to existing point
       if (this.hovered_point) {
@@ -161,7 +145,7 @@ export class GraphEditor implements BaseObject {
       }
       // in selection, mode: draw segment from selected point
       else {
-        this.intent_segment = new Segment(this.selected_point, mouse_point);
+        this.intent_segment = new Segment(this.selected_point, point);
       }
     }
     // not in selection mode: draw nothing

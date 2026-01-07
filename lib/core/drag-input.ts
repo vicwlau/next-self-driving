@@ -9,7 +9,7 @@ export interface DragRecord {
   drag_distance: number;
 }
 
-export class Drag {
+export class DragInput {
   // main objects
   private base_element: HTMLCanvasElement;
   private abort_controller: AbortController | null = null;

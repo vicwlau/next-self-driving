@@ -18,10 +18,13 @@ export default function Home() {
 
     ctx.current = canvas_ref.current.getContext("2d");
     world_editor.current ??= new WorldEditor(canvas_ref.current!);
+    world_editor.current.start();
 
     setLoaded(true);
 
-    return () => {};
+    return () => {
+      world_editor.current?.dispose();
+    };
     /*
       MAIN ENDS
     */
