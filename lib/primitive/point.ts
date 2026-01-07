@@ -1,25 +1,27 @@
-import { draw_circle } from "../draw.utils";
+import { draw_circle, DrawCircleParams } from "../draw.utils";
 import { Vec2 } from "../types";
 
 export class Point {
   x: number;
   y: number;
-  vect2: Vec2;
   constructor(x: number, y: number) {
     this.x = x;
     this.y = y;
-    this.vect2 = { x: this.x, y: this.y };
   }
 
   draw(
     ctx: CanvasRenderingContext2D,
-    radius: number = 5,
-    color: string = "red"
+    options: Omit<DrawCircleParams, "center">
   ) {
-    draw_circle(ctx, this.vect2, radius, color);
+    //
+    draw_circle(ctx, {
+      center: this,
+      ...options,
+    });
   }
 
-  equals(other: Point): boolean {
+  equals(other: Point | null): boolean {
+    if (!other) return false;
     return this.x === other.x && this.y === other.y;
   }
 }

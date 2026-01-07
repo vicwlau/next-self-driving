@@ -65,7 +65,7 @@ export class Graph {
     }
 
     for (const point of this.points) {
-      point.draw(ctx);
+      point.draw(ctx, {});
     }
   }
 

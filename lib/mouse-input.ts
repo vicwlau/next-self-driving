@@ -5,6 +5,10 @@ export interface MouseCoords {
 
 export type MouseCallback = (coords: MouseCoords, event: MouseEvent) => void;
 
+export interface MouseInputParams {
+  is_remove_context_menu: boolean;
+}
+
 export class MouseInput {
   private base_element: HTMLCanvasElement;
   private abort_controller: AbortController | null = null;
@@ -14,8 +18,11 @@ export class MouseInput {
   delegate_mousemove?: MouseCallback;
   delegate_mousewheel?: (e: WheelEvent) => void;
 
-  constructor(base_element: HTMLCanvasElement) {
+  private is_remove_cotextmenu = false;
+
+  constructor(base_element: HTMLCanvasElement, options: MouseInputParams) {
     this.base_element = base_element;
+    this.is_remove_cotextmenu = options.is_remove_context_menu;
   }
 
   start(): void {
@@ -25,6 +32,13 @@ export class MouseInput {
     this.abort_controller = new AbortController();
     const { signal } = this.abort_controller;
 
+    if (this.is_remove_cotextmenu) {
+      this.base_element.addEventListener(
+        "contextmenu",
+        (e) => this.handle_context_menu(e),
+        { signal }
+      );
+    }
     this.base_element.addEventListener(
       "mouseup",
       (e) => this.handle_mouseup(e),
@@ -56,6 +70,10 @@ export class MouseInput {
 
   private get_coords(e: MouseEvent): MouseCoords {
     return { x: e.offsetX, y: e.offsetY };
+  }
+
+  private handle_context_menu(e: MouseEvent): void {
+    e.preventDefault();
   }
 
   private handle_mouseup(e: MouseEvent): void {

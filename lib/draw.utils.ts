@@ -1,5 +1,5 @@
 import { Segment } from "./primitive/segment";
-import { Line, Vec2 } from "./types";
+import { Vec2 } from "./types";
 
 export function draw_segment(
   ctx: CanvasRenderingContext2D,
@@ -15,14 +15,37 @@ export function draw_segment(
   ctx.stroke();
 }
 
+export interface DrawCircleParams {
+  center: Vec2;
+  radius?: number;
+  color?: string;
+  line_width?: number;
+  filled?: boolean;
+  dashed?: boolean;
+}
+
 export function draw_circle(
   ctx: CanvasRenderingContext2D,
-  center: Vec2,
-  radius: number,
-  color: string = "black"
+  params: DrawCircleParams
 ) {
+  const {
+    center,
+    radius = 5,
+    color = "black",
+    line_width = 2,
+    filled = true,
+    dashed = false,
+  } = params;
+
   ctx.beginPath();
   ctx.fillStyle = color;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = line_width;
+  if (dashed) ctx.setLineDash([3, 3]);
+
   ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
-  ctx.fill();
+
+  if (filled) ctx.fill();
+  else ctx.stroke();
+  ctx.setLineDash([]);
 }

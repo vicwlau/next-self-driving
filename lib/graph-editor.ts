@@ -1,4 +1,5 @@
 import { Graph } from "./math/graph";
+import { get_nearest_point } from "./math/utils";
 import { MouseInput } from "./mouse-input";
 import { Point } from "./primitive/point";
 
@@ -10,6 +11,10 @@ export class GraphEditor implements BaseObject {
 
   mouse_input: MouseInput;
 
+  selected_point: Point | null = null;
+  hovered_point: Point | null = null;
+  is_dragging: boolean = false;
+
   constructor(canvas: HTMLCanvasElement, graph: Graph) {
     this.canvas = canvas;
     const context = canvas.getContext("2d");
@@ -18,15 +23,23 @@ export class GraphEditor implements BaseObject {
     }
     this.ctx = context;
     this.graph = graph;
-    this.mouse_input = new MouseInput(canvas);
+    this.mouse_input = new MouseInput(canvas, { is_remove_context_menu: true });
   }
 
   start(): void {
     if (this.animation_id !== 0) return; // Already started
 
     // assign delegates before start
-    this.mouse_input.delegate_mouseup = (coords) => {
-      this.handle_mouseup(new Point(coords.x, coords.y));
+    this.mouse_input.delegate_mouseup = (coords, evt) => {
+      this.handle_mouse_up(new Point(coords.x, coords.y), evt);
+    };
+
+    this.mouse_input.delegate_mousemove = (coords) => {
+      this.handle_mouse_move(new Point(coords.x, coords.y));
+    };
+
+    this.mouse_input.delegate_mousedown = (coords, evt) => {
+      this.handle_mouse_down(new Point(coords.x, coords.y), evt);
     };
 
     this.mouse_input.start();
@@ -38,6 +51,7 @@ export class GraphEditor implements BaseObject {
     this.animation_id = 0;
     this.mouse_input.dispose();
   }
+
   loop = () => {
     this.update();
     this.animation_id = requestAnimationFrame(this.loop);
@@ -46,13 +60,60 @@ export class GraphEditor implements BaseObject {
   update(): void {
     this.clear();
     this.graph.draw(this.ctx);
+
+    if (this.selected_point)
+      this.selected_point.draw(this.ctx, {
+        radius: 8,
+        color: "blue",
+        filled: false,
+        dashed: true,
+      });
+
+    if (this.hovered_point)
+      this.hovered_point.draw(this.ctx, {
+        radius: 12,
+        color: "blue",
+        line_width: 2,
+        filled: false,
+      });
   }
 
   clear(): void {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  handle_mouseup(point: Point): void {
-    this.graph.try_add_point(point);
+  handle_mouse_up(point: Point, evt: MouseEvent): void {
+    this.is_dragging = false;
+  }
+
+  handle_mouse_move(point: Point): void {
+    this.hovered_point = get_nearest_point(point, this.graph.points);
+
+    if (this.is_dragging && this.selected_point) {
+      this.hovered_point = null;
+      this.selected_point.x = point.x;
+      this.selected_point.y = point.y;
+    }
+  }
+
+  handle_mouse_down(point: Point, evt: MouseEvent): void {
+    this.is_dragging = true;
+
+    // right click
+    if (evt.button === 2) {
+      if (this.hovered_point) {
+        const is_selected = this.hovered_point.equals(this.selected_point);
+        this.graph.remove_point(this.hovered_point);
+        this.hovered_point = null;
+
+        if (is_selected) this.selected_point = null;
+      }
+    }
+    // left click
+    else if (evt.button === 0) {
+      this.selected_point = get_nearest_point(point, this.graph.points);
+      // no point selected with min. threshold, then add point
+      if (!this.selected_point) this.graph.try_add_point(point);
+    }
   }
 }
