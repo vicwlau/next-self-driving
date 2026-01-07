@@ -1,6 +1,6 @@
 import { Graph } from "./math/graph";
 import { get_nearest_point } from "./math/utils";
-import { MouseInput } from "./mouse-input";
+import { MouseInput } from "./core/mouse-input";
 import { Point } from "./primitive/point";
 import { Segment } from "./primitive/segment";
 

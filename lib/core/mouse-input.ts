@@ -18,11 +18,11 @@ export class MouseInput {
   delegate_mousemove?: MouseCallback;
   delegate_mousewheel?: (e: WheelEvent) => void;
 
-  private is_remove_cotextmenu = false;
+  private is_remove_contextmenu = false;
 
   constructor(base_element: HTMLCanvasElement, options: MouseInputParams) {
     this.base_element = base_element;
-    this.is_remove_cotextmenu = options.is_remove_context_menu;
+    this.is_remove_contextmenu = options.is_remove_context_menu;
   }
 
   start(): void {
@@ -32,7 +32,7 @@ export class MouseInput {
     this.abort_controller = new AbortController();
     const { signal } = this.abort_controller;
 
-    if (this.is_remove_cotextmenu) {
+    if (this.is_remove_contextmenu) {
       this.base_element.addEventListener(
         "contextmenu",
         (e) => this.handle_context_menu(e),

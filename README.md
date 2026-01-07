@@ -12,6 +12,7 @@ build 3d world editor, road system, machine learning, and expertise in javascrip
 - drag move points
 - intent line for connecting segments or drawing a new point with connected segment
 - zoom | drag | pan,
+- `abortcontroller`
 
 # learnings
 
