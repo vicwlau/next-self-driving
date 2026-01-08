@@ -10,9 +10,9 @@ export interface DragOffset {
 }
 
 export interface DragState {
-  orign: Point2D;
-  end: Point2D;
-  distance: number;
+  origin: Point2D;
+  end: Point2D | null;
+  offset: DragOffset;
 }
 
 export class DragInput {
@@ -20,18 +20,14 @@ export class DragInput {
   private base_element: HTMLCanvasElement;
   private abort_controller: AbortController | null = null;
 
-  // history
-  last_drag_state: DragState | null = null;
-
-  // current states
-  current: Point2D | null = null;
   origin: Point2D | null = null;
-  distance: number | null = null;
+  current: Point2D | null = null;
+  last_drag_state: DragState | null = null;
 
   // callbacks
   onStart?: (origin: Point2D, evt: MouseEvent) => void;
-  onMove?: (current: Point2D, evt: MouseEvent) => void;
-  onEnd?: (drag_state: DragState, evt: MouseEvent) => void;
+  onMove?: (state: DragState, evt: MouseEvent) => void;
+  onEnd?: (state: DragState, evt: MouseEvent) => void;
 
   constructor(canvas: HTMLCanvasElement) {
     this.base_element = canvas;
@@ -58,7 +54,6 @@ export class DragInput {
   private start_drag(origin: Point2D, evt: MouseEvent) {
     this.origin = origin;
     this.current = origin;
-    this.distance = 0;
 
     if (this.onStart) {
       this.onStart({ ...origin }, evt);
@@ -68,33 +63,45 @@ export class DragInput {
   private move_drag(current: Point2D, evt: MouseEvent) {
     if (!this.origin) return;
 
-    this.current = current;
-    this.distance = this.get_distance(this.origin, current);
+    const dx = current.x - this.origin.x;
+    const dy = current.y - this.origin.y;
 
-    if (this.onMove) this.onMove({ ...current }, evt);
+    const distance = this.get_distance(this.origin, current);
+    const offset = {
+      dx,
+      dy,
+      distance,
+    };
+
+    const state: DragState = {
+      origin: this.origin,
+      end: null,
+      offset,
+    };
+
+    if (this.onMove) this.onMove(state, evt);
   }
 
   private end_drag(end: Point2D, evt: MouseEvent) {
     if (!this.origin) return;
 
-    const distance = this.get_distance(this.origin, end);
+    const dx = end.x - this.origin.x;
+    const dy = end.y - this.origin.y;
 
-    this.last_drag_state = {
-      orign: { ...this.origin },
-      end: { ...end },
-      distance: distance,
+    const distance = this.get_distance(this.origin, end);
+    const offset = {
+      dx,
+      dy,
+      distance,
     };
 
-    if (this.onEnd)
-      // deep copy
-      this.onEnd(
-        {
-          orign: { ...this.last_drag_state.orign },
-          end: { ...this.last_drag_state.end },
-          distance: distance,
-        },
-        evt
-      );
+    const state: DragState = {
+      origin: this.origin,
+      end: null,
+      offset,
+    };
+
+    if (this.onEnd) this.onEnd(state, evt);
 
     this.origin = null;
     this.current = null;

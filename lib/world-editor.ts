@@ -17,7 +17,6 @@ export class WorldEditor implements BaseObject {
   graph: Graph;
 
   private animation_id = 0;
-  private drag_start_offset: Point = new Point(0, 0);
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
@@ -63,23 +62,14 @@ export class WorldEditor implements BaseObject {
     };
 
     this.drag_input.onStart = (start) => {
-      this.drag_start_offset = new Point(
-        this.view_port.offset.x,
-        this.view_port.offset.y
-      );
-
+      this.view_port.handle_pan_start();
       this.graph_editor.is_dragging = true;
     };
 
-    this.drag_input.onMove = (current, evt) => {
+    this.drag_input.onMove = (state, evt) => {
       // right drag => pan camera
       if (evt.buttons === 2) {
-        const dx = current.x - (this.drag_input.origin?.x || 0);
-        const dy = current.y - (this.drag_input.origin?.y || 0);
-        this.view_port.offset.x =
-          this.drag_start_offset.x + dx * this.view_port.zoom;
-        this.view_port.offset.y =
-          this.drag_start_offset.y + dy * this.view_port.zoom;
+        this.view_port.handle_pan_move(state.offset);
       }
 
       // left drag => move point
@@ -88,6 +78,7 @@ export class WorldEditor implements BaseObject {
         this.graph_editor.handle_mouse_drag(world_point);
       }
     };
+
     this.drag_input.onEnd = (drag) => {
       this.graph_editor.is_dragging = false;
     };
@@ -111,8 +102,11 @@ export class WorldEditor implements BaseObject {
     this.clear();
     this.ctx.save();
     this.ctx.scale(1 / this.view_port.zoom, 1 / this.view_port.zoom);
-    this.ctx.translate(this.view_port.offset.x, this.view_port.offset.y);
+    const { x, y } = this.view_port.offset;
+    this.ctx.translate(x, y);
+
     this.graph_editor.update();
+
     this.ctx.restore();
   }
 
