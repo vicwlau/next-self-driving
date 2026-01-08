@@ -36,7 +36,7 @@ export default function Home() {
       <ActionBar
         canvas={canvas_ref.current!}
         ctx={ctx.current!}
-        graph={world_editor?.current?.graph}
+        graph_editor={world_editor?.current?.graph_editor}
       />
     </div>
   );

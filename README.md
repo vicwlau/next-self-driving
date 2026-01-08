@@ -25,6 +25,10 @@ build 3d world editor, road system, machine learning, and expertise in javascrip
 - when removing a segment, use `findIndex` to find element, then `splice` only if return is not -1
 - how does `abort signal` work when creating event listeners
 - refactor to have drag-input and mouse-input as components withint world-edtior
+- put `load()` function within graph since it knows best how to resconstruct its own internal relationships (references between segments and points)
+  - staic load() acts as factory within graph,
+  - `crucial logic` to preserve the `segments`, you must use the same corresponding `points`.
+  - `localstorage` should be placed in `graph-editor` or `world-editor` since WHERE to save and not HOW to save
 
 ```tsx
 remove_segment(segment: Segment) {
@@ -54,4 +58,46 @@ get_world_point(e: MouseEvent) {
       e.offsetY * this.zoom - this.offset.y
     );
   }
+```
+
+## center on zoom
+
+explanation of how the camera position works; however, the mouse interaction is correct because of this;
+
+```tsx
+  update() {
+    this.clear();
+    this.ctx.save();
+    // this sets the center to (-400,-300), top left {canvas.width/2...}
+    this.ctx.translate(this.view.center.x, this.view.center.y);
+
+    // zoom out from that position
+    this.ctx.scale(1 / this.view.zoom, 1 / this.view.zoom);
+
+    // move to the current world offset
+    this.ctx.translate(this.view.offset.x, this.view.offset.y);
+  }
+```
+
+## loading segments
+
+```tsx
+// incorrect; this logic is asking 'is this the correct point OR is points[0] a valid object? since it is always true, find() essentially just grabbed the first item it saw every single time. And thus, no segments since they are all the same points.
+
+const segments = (json_data.segments || []).map(
+  (i: any) =>
+    new Segment(
+      points.find((p: Point) => p.equals(i.p1) || points[0]),
+      points.find((p: Point) => p.equals(i.p2) || points[0])
+    )
+);
+
+// corrected
+const segments = (json_data.segments || []).map(
+  (i: any) =>
+    new Segment(
+      points.find((p: Point) => p.equals(i.p1)) || points[0],
+      points.find((p: Point) => p.equals(i.p2)) || points[0]
+    )
+);
 ```

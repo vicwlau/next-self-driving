@@ -8,8 +8,8 @@ export class Segment {
   constructor(p1: Point, p2: Point) {
     if (p1.equals(p2)) {
       const msg = "A segment cannot have identical endpoints";
-      throw new Error(msg);
-      // console.warn("A segment cannot have identical endpoints.");
+      console.warn(msg);
+      // throw new Error(msg);
     }
 
     this.p1 = p1;

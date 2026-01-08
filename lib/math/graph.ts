@@ -1,6 +1,11 @@
 import { Point } from "../primitive/point";
 import { Segment } from "../primitive/segment";
 
+export interface InfoGraph {
+  points: Point[];
+  segments: Segment[];
+}
+
 export class Graph {
   points: Point[] = [];
   segments: Segment[] = [];
@@ -8,6 +13,21 @@ export class Graph {
   constructor(points: Point[], segments: Segment[] = []) {
     this.points = points;
     this.segments = segments;
+  }
+
+  static Load(json_data: any): Graph {
+    const points = (json_data.points || []).map(
+      (i: any) => new Point(i.x, i.y)
+    );
+    const segments = (json_data.segments || []).map(
+      (i: any) =>
+        new Segment(
+          points.find((p: Point) => p.equals(i.p1)) || points[0],
+          points.find((p: Point) => p.equals(i.p2)) || points[0]
+        )
+    );
+
+    return new Graph(points, segments);
   }
 
   add_point(point: Point) {
@@ -61,7 +81,7 @@ export class Graph {
 
   draw(ctx: CanvasRenderingContext2D) {
     for (const segment of this.segments) {
-      segment.draw(ctx);
+      segment.draw(ctx, {});
     }
 
     for (const point of this.points) {
@@ -69,7 +89,7 @@ export class Graph {
     }
   }
 
-  dispose() {
+  reset() {
     this.points.length = 0;
     this.segments.length = 0;
   }

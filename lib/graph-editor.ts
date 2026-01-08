@@ -14,6 +14,8 @@ export class GraphEditor implements BaseObject {
   hovered_point: Point | null = null;
   intent_segment: Segment | null = null;
 
+  storage_key: string = "graph";
+
   constructor(canvas: HTMLCanvasElement, graph: Graph) {
     this.canvas = canvas;
     const context = this.canvas.getContext("2d");
@@ -25,8 +27,33 @@ export class GraphEditor implements BaseObject {
     this.graph = graph;
   }
 
-  start(): void {}
+  start(): void {
+    this.load_graph();
+  }
+
   dispose(): void {}
+
+  load_graph(): void {
+    const data = JSON.parse(localStorage.getItem(this.storage_key) || "");
+    if (data) {
+      this.graph = Graph.Load(data);
+      this.reset_selections();
+    }
+  }
+
+  save_graph(): void {
+    localStorage.setItem(this.storage_key, JSON.stringify(this.graph));
+  }
+  reset_graph(): void {
+    this.graph.reset();
+    this.reset_selections();
+  }
+
+  private reset_selections() {
+    this.selected_point = null;
+    this.hovered_point = null;
+    this.intent_segment = null;
+  }
 
   update(): void {
     this.graph.draw(this.ctx);

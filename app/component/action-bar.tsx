@@ -1,5 +1,6 @@
 "use client";
 
+import { GraphEditor } from "@/lib/graph-editor";
 import { Graph } from "@/lib/math/graph";
 import { Point } from "@/lib/primitive/point";
 import { Segment } from "@/lib/primitive/segment";
@@ -7,11 +8,26 @@ import { Segment } from "@/lib/primitive/segment";
 interface ActionBarProps {
   canvas?: HTMLCanvasElement;
   ctx?: CanvasRenderingContext2D;
-  graph?: Graph;
+  graph_editor?: GraphEditor;
 }
-export default function ActionBar({ canvas, ctx, graph }: ActionBarProps) {
+export default function ActionBar({
+  canvas,
+  ctx,
+  graph_editor,
+}: ActionBarProps) {
+  function save_graph() {
+    if (!canvas || !ctx || !graph_editor) return;
+    graph_editor.save_graph();
+  }
+
+  function reset_graph() {
+    if (!canvas || !ctx || !graph_editor) return;
+    graph_editor.reset_graph();
+  }
+
   function remove_segment() {
-    if (!canvas || !ctx || !graph) return;
+    if (!canvas || !ctx || !graph_editor) return;
+    const graph = graph_editor.graph;
     const index = Math.floor(Math.random() * graph.segments.length);
     const segment = graph.segments[index];
     graph.remove_segment(segment);
@@ -19,7 +35,8 @@ export default function ActionBar({ canvas, ctx, graph }: ActionBarProps) {
   }
 
   function remove_point() {
-    if (!canvas || !ctx || !graph) return;
+    if (!canvas || !ctx || !graph_editor) return;
+    const graph = graph_editor.graph;
     const index = Math.floor(Math.random() * graph.points.length);
     const point = graph.points[index];
     graph.remove_point(point);
@@ -27,7 +44,8 @@ export default function ActionBar({ canvas, ctx, graph }: ActionBarProps) {
   }
 
   function add_random_segment() {
-    if (!canvas || !ctx || !graph) return;
+    if (!canvas || !ctx || !graph_editor) return;
+    const graph = graph_editor.graph;
 
     const index1 = Math.floor(Math.random() * graph.points.length);
     const index2 = Math.floor(Math.random() * graph.points.length);
@@ -39,40 +57,40 @@ export default function ActionBar({ canvas, ctx, graph }: ActionBarProps) {
   }
 
   function add_random_point() {
-    if (!canvas || !ctx || !graph) return;
+    if (!canvas || !ctx || !graph_editor) return;
     const random_point: Point = new Point(
       Math.random() * 600,
       Math.random() * 600
     );
 
-    graph.try_add_point(random_point);
+    graph_editor.graph.try_add_point(random_point);
     refresh_graph();
   }
 
   function remove_all() {
-    if (!canvas || !ctx || !graph) return;
-    graph.dispose();
+    if (!canvas || !ctx || !graph_editor) return;
+    graph_editor.graph.reset();
     refresh_graph();
   }
 
   function refresh_graph() {
-    if (!canvas || !ctx || !graph) return;
+    if (!canvas || !ctx || !graph_editor) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    graph.draw(ctx);
+    graph_editor.graph.draw(ctx);
   }
 
   return (
     <div className="flex flex-col h-full items-center. justify-center ml-6 gap-y-4">
-      <Button onClick={add_random_point}>add point</Button>
+      {/* <Button onClick={add_random_point}>add point</Button>
       <Button onClick={add_random_segment}>add segment</Button>
       <Button onClick={remove_segment} className="bg-red-600">
         remove segment
+      </Button> */}
+      <Button onClick={save_graph} className="bg-green-800">
+        save graph
       </Button>
-      <Button onClick={remove_point} className="bg-red-600">
-        remove point
-      </Button>
-      <Button onClick={remove_all} className="bg-red-800">
-        remove all
+      <Button onClick={reset_graph} className="bg-red-600">
+        reset graph
       </Button>
     </div>
   );

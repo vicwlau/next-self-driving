@@ -39,6 +39,7 @@ export class WorldEditor implements BaseObject {
     this.drag_input = new DragInput(canvas);
 
     this.view = new ViewPort(canvas);
+
     this.graph = new Graph([p1, p2, p3, p4], [s1, s2, s3]);
     this.graph_editor = new GraphEditor(canvas, this.graph);
   }
@@ -103,15 +104,8 @@ export class WorldEditor implements BaseObject {
   }
 
   update() {
-    this.clear();
-    this.ctx.save();
-    this.ctx.scale(1 / this.view.zoom, 1 / this.view.zoom);
-    const { x, y } = this.view.offset;
-    this.ctx.translate(x, y);
-
+    this.view.update();
     this.graph_editor.update();
-
-    this.ctx.restore();
   }
 
   dispose(): void {
@@ -119,9 +113,5 @@ export class WorldEditor implements BaseObject {
     this.drag_input.dispose();
     this.view.dispose();
     this.graph_editor.dispose();
-  }
-
-  clear(): void {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 }
