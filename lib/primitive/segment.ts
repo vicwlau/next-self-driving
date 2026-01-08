@@ -11,7 +11,6 @@ export class Segment {
       console.warn(msg);
       // throw new Error(msg);
     }
-
     this.p1 = p1;
     this.p2 = p2;
   }
