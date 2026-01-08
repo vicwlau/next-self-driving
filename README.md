@@ -39,6 +39,10 @@ remove_segment(segment: Segment) {
   }
 ```
 
+# action items
+
+- camera span w/ extending line segment intent
+
 # bugs
 
 ## point had vect2

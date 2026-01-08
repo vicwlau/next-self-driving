@@ -56,6 +56,7 @@ export class Graph {
 
   try_add_segment(segment: Segment): boolean {
     const exists = this.contains_segment(segment);
+
     if (!exists) {
       this.add_segment(segment);
       return true;

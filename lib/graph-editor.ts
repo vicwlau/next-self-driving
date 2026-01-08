@@ -14,7 +14,7 @@ export class GraphEditor implements BaseObject {
   hovered_point: Point | null = null;
   intent_segment: Segment | null = null;
 
-  storage_key: string = "graph";
+  STORAGE_KEY: string = "graph";
 
   constructor(canvas: HTMLCanvasElement, graph: Graph) {
     this.canvas = canvas;
@@ -34,7 +34,7 @@ export class GraphEditor implements BaseObject {
   dispose(): void {}
 
   load_graph(): void {
-    const data = JSON.parse(localStorage.getItem(this.storage_key) || "");
+    const data = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || "");
     if (data) {
       this.graph = Graph.Load(data);
       this.reset_selections();
@@ -42,7 +42,7 @@ export class GraphEditor implements BaseObject {
   }
 
   save_graph(): void {
-    localStorage.setItem(this.storage_key, JSON.stringify(this.graph));
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.graph));
   }
   reset_graph(): void {
     this.graph.reset();
