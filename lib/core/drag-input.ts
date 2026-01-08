@@ -25,9 +25,9 @@ export class DragInput {
   last_drag_state: DragState | null = null;
 
   // callbacks
-  onStart?: (origin: Point2D, evt: MouseEvent) => void;
-  onMove?: (state: DragState, evt: MouseEvent) => void;
-  onEnd?: (state: DragState, evt: MouseEvent) => void;
+  on_start?: (origin: Point2D, evt: MouseEvent) => void;
+  on_move?: (state: DragState, evt: MouseEvent) => void;
+  on_end?: (state: DragState, evt: MouseEvent) => void;
 
   constructor(canvas: HTMLCanvasElement) {
     this.base_element = canvas;
@@ -55,8 +55,8 @@ export class DragInput {
     this.origin = origin;
     this.current = origin;
 
-    if (this.onStart) {
-      this.onStart({ ...origin }, evt);
+    if (this.on_start) {
+      this.on_start({ ...origin }, evt);
     }
   }
 
@@ -79,7 +79,7 @@ export class DragInput {
       offset,
     };
 
-    if (this.onMove) this.onMove(state, evt);
+    if (this.on_move) this.on_move(state, evt);
   }
 
   private end_drag(end: Point2D, evt: MouseEvent) {
@@ -101,7 +101,7 @@ export class DragInput {
       offset,
     };
 
-    if (this.onEnd) this.onEnd(state, evt);
+    if (this.on_end) this.on_end(state, evt);
 
     this.origin = null;
     this.current = null;

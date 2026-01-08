@@ -13,6 +13,7 @@ build 3d world editor, road system, machine learning, and expertise in javascrip
 - intent line for connecting segments or drawing a new point with connected segment
 - zoom | drag | pan,
 - `abortcontroller`
+- how to zoom center to the view position
 
 # learnings
 
@@ -23,6 +24,7 @@ build 3d world editor, road system, machine learning, and expertise in javascrip
 - when removing a point, also remove all segments contain that point
 - when removing a segment, use `findIndex` to find element, then `splice` only if return is not -1
 - how does `abort signal` work when creating event listeners
+- refactor to have drag-input and mouse-input as components withint world-edtior
 
 ```tsx
 remove_segment(segment: Segment) {

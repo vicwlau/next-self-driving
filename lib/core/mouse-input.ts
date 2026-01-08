@@ -13,10 +13,10 @@ export class MouseInput {
   private base_element: HTMLCanvasElement;
   private abort_controller: AbortController | null = null;
 
-  delegate_mouseup?: MouseCallback;
-  delegate_mousedown?: MouseCallback;
-  delegate_mousemove?: MouseCallback;
-  delegate_mousewheel?: (e: WheelEvent) => void;
+  on_up?: MouseCallback;
+  on_down?: MouseCallback;
+  on_move?: MouseCallback;
+  on_wheel?: (e: WheelEvent) => void;
 
   private is_remove_contextmenu = false;
 
@@ -77,18 +77,18 @@ export class MouseInput {
   }
 
   private handle_mouseup(e: MouseEvent): void {
-    this.delegate_mouseup?.(this.get_coords(e), e);
+    this.on_up?.(this.get_coords(e), e);
   }
 
   private handle_mousedown(e: MouseEvent): void {
-    this.delegate_mousedown?.(this.get_coords(e), e);
+    this.on_down?.(this.get_coords(e), e);
   }
 
   private handle_mousemove(e: MouseEvent): void {
-    this.delegate_mousemove?.(this.get_coords(e), e);
+    this.on_move?.(this.get_coords(e), e);
   }
 
   private handle_mousewheel(e: WheelEvent): void {
-    this.delegate_mousewheel?.(e);
+    this.on_wheel?.(e);
   }
 }

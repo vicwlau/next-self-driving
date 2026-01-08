@@ -12,7 +12,7 @@ export class WorldEditor implements BaseObject {
 
   mouse_input: MouseInput;
   drag_input: DragInput;
-  view_port: ViewPort;
+  view: ViewPort;
   graph_editor: GraphEditor;
   graph: Graph;
 
@@ -38,71 +38,75 @@ export class WorldEditor implements BaseObject {
     this.mouse_input = new MouseInput(canvas, { is_remove_context_menu: true });
     this.drag_input = new DragInput(canvas);
 
-    this.view_port = new ViewPort(canvas);
+    this.view = new ViewPort(canvas);
     this.graph = new Graph([p1, p2, p3, p4], [s1, s2, s3]);
     this.graph_editor = new GraphEditor(canvas, this.graph);
   }
 
   start() {
     // assign delegates before start
-    this.mouse_input.delegate_mouseup = () => {};
-
-    this.mouse_input.delegate_mousemove = (coords, evt) => {
-      const world_point = this.view_port.get_world_point(evt);
-      this.graph_editor.handle_mouse_move(world_point);
-    };
-
-    this.mouse_input.delegate_mousedown = (coords, evt) => {
-      const world_point = this.view_port.get_world_point(evt);
-      this.graph_editor.handle_mouse_down(world_point, evt);
-    };
-
-    this.mouse_input.delegate_mousewheel = (evt: WheelEvent) => {
-      this.view_port.handle_mousewheel(evt);
-    };
-
-    this.drag_input.onStart = (start) => {
-      this.view_port.handle_pan_start();
-      this.graph_editor.is_dragging = true;
-    };
-
-    this.drag_input.onMove = (state, evt) => {
-      // right drag => pan camera
-      if (evt.buttons === 2) {
-        this.view_port.handle_pan_move(state.offset);
-      }
-
-      // left drag => move point
-      else if (evt.buttons === 1) {
-        const world_point = this.view_port.get_world_point(evt);
-        this.graph_editor.handle_mouse_drag(world_point);
-      }
-    };
-
-    this.drag_input.onEnd = (drag) => {
-      this.graph_editor.is_dragging = false;
-    };
+    this.initialize_use_controls();
 
     this.mouse_input.start();
     this.drag_input.start();
-    this.view_port.start();
+    this.view.start();
     this.graph_editor.start();
 
-    // start loop
     if (this.animation_id !== 0) return; // Already started
-    this.loop();
+
+    this.loop(); // start main update loop
   }
 
-  loop = () => {
+  private loop = () => {
     this.update();
     this.animation_id = requestAnimationFrame(this.loop);
   };
 
+  private initialize_use_controls() {
+    /*
+      MOUSE EVENTS
+    */
+    this.mouse_input.on_move = (coords, evt) => {
+      const world_point = this.view.get_world_point(evt);
+      this.graph_editor.handle_mouse_move(world_point);
+    };
+    this.mouse_input.on_down = (coords, evt) => {
+      const world_point = this.view.get_world_point(evt);
+      this.graph_editor.handle_mouse_down(world_point, evt);
+    };
+    this.mouse_input.on_wheel = (evt: WheelEvent) => {
+      this.view.handle_mousewheel(evt);
+    };
+
+    /*
+      DRAG EVENTS
+    */
+    this.drag_input.on_start = (start) => {
+      this.view.handle_pan_start();
+      this.graph_editor.is_dragging = true;
+    };
+    this.drag_input.on_move = (state, evt) => {
+      // right drag => pan camera
+      if (evt.buttons === 2) {
+        this.view.handle_pan_move(state.offset);
+      }
+
+      // left drag => move point
+      else if (evt.buttons === 1) {
+        const world_point = this.view.get_world_point(evt);
+        this.graph_editor.handle_mouse_drag(world_point);
+      }
+    };
+    this.drag_input.on_end = (drag) => {
+      this.graph_editor.is_dragging = false;
+    };
+  }
+
   update() {
     this.clear();
     this.ctx.save();
-    this.ctx.scale(1 / this.view_port.zoom, 1 / this.view_port.zoom);
-    const { x, y } = this.view_port.offset;
+    this.ctx.scale(1 / this.view.zoom, 1 / this.view.zoom);
+    const { x, y } = this.view.offset;
     this.ctx.translate(x, y);
 
     this.graph_editor.update();
@@ -113,7 +117,7 @@ export class WorldEditor implements BaseObject {
   dispose(): void {
     this.mouse_input.dispose();
     this.drag_input.dispose();
-    this.view_port.dispose();
+    this.view.dispose();
     this.graph_editor.dispose();
   }
 
