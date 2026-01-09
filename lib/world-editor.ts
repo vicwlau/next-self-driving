@@ -4,6 +4,7 @@ import { GraphEditor } from "./graph-editor";
 import { Graph } from "./math/graph";
 import { Point } from "./primitive/point";
 import { Segment } from "./primitive/segment";
+import { Square } from "./primitive/square";
 import { ViewPort } from "./view-port";
 
 export class WorldEditor implements BaseObject {
@@ -31,22 +32,18 @@ export class WorldEditor implements BaseObject {
     const p3 = new Point(400, 400);
     const p4 = new Point(100, 300);
 
-    const s1 = new Segment(p1, p2);
-    const s2 = new Segment(p2, p3);
-    const s3 = new Segment(p3, p4);
-
     this.mouse_input = new MouseInput(canvas, { is_remove_context_menu: true });
     this.drag_input = new DragInput(canvas);
 
     this.view = new ViewPort(canvas);
 
-    this.graph = new Graph([p1, p2, p3, p4], [s1, s2, s3]);
+    this.graph = new Graph([p1, p2, p3, p4], []);
     this.graph_editor = new GraphEditor(canvas, this.graph);
   }
 
   start() {
     // assign delegates before start
-    this.initialize_use_controls();
+    this.init_mouse_events();
 
     this.mouse_input.start();
     this.drag_input.start();
@@ -63,7 +60,7 @@ export class WorldEditor implements BaseObject {
     this.animation_id = requestAnimationFrame(this.loop);
   };
 
-  private initialize_use_controls() {
+  private init_mouse_events() {
     /*
       MOUSE EVENTS
     */

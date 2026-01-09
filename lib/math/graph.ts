@@ -1,5 +1,7 @@
+import { draw_circle, draw_text } from "../draw.utils";
 import { Point } from "../primitive/point";
 import { Segment } from "../primitive/segment";
+import { Square } from "../primitive/square";
 
 export interface InfoGraph {
   points: Point[];

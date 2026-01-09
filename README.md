@@ -6,7 +6,7 @@ build 3d world editor, road system, machine learning, and expertise in javascrip
 
 # summary of tasks
 
-- draw `points` and `segments`
+- draw `points` and connect `segments`
 - state for `hovered` and `selected` states
 - separation of `graph` and `graph-editor` and `point` when rendering.
 - drag move points
@@ -104,4 +104,87 @@ const segments = (json_data.segments || []).map(
       points.find((p: Point) => p.equals(i.p2)) || points[0]
     )
 );
+```
+
+# inefficent example
+
+i wrote
+
+```tsx
+  static chess_board_graph() {
+    const rows = 8;
+    const spacing = 50;
+    const margin = 50;
+
+    const matrix: Point[][] = [];
+    const points: Point[] = [];
+    const segments: Segment[] = [];
+
+    // points
+    for (let x = 0; x < rows + 1; x++) {
+      matrix.push([]);
+      for (let y = 0; y < rows + 1; y++) {
+        const p = new Point(x * spacing + margin, y * spacing + margin);
+        points.push(p);
+        matrix[x].push(p);
+      }
+    }
+
+    for (let j = 0; j <= rows; j++) {
+      const p1 = matrix[0][j];
+      const p2 = matrix[rows][j];
+      const segment = new Segment(p1, p2);
+      segments.push(segment);
+    }
+
+    for (let j = 0; j <= rows; j++) {
+      const p1 = matrix[j][0];
+      const p2 = matrix[j][rows];
+      const segment = new Segment(p1, p2);
+      segments.push(segment);
+    }
+
+    return new Graph(points, segments);
+  }
+
+
+```
+
+ai wrote
+
+```tsx
+  static chess_board_graph() {
+    const points: Point[] = [];
+    const segments: Segment[] = [];
+
+    const grid_size = 8;
+    const cell_size = 50;
+
+    // Create points
+    for (let i = 0; i <= grid_size; i++) {
+      for (let j = 0; j <= grid_size; j++) {
+        points.push(new Point(i * cell_size + 100, j * cell_size + 100));
+      }
+    }
+
+    // Create horizontal segments
+    for (let i = 0; i <= grid_size; i++) {
+      for (let j = 0; j < grid_size; j++) {
+        const p1 = points[i * (grid_size + 1) + j];
+        const p2 = points[i * (grid_size + 1) + (j + 1)];
+        segments.push(new Segment(p1, p2));
+      }
+    }
+
+    // Create vertical segments
+    for (let i = 0; i < grid_size; i++) {
+      for (let j = 0; j <= grid_size; j++) {
+        const p1 = points[i * (grid_size + 1) + j];
+        const p2 = points[(i + 1) * (grid_size + 1) + j];
+        segments.push(new Segment(p1, p2));
+      }
+    }
+
+    return new Graph(points, segments);
+  }
 ```

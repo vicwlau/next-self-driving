@@ -10,51 +10,55 @@ export interface MouseInputParams {
 }
 
 export class MouseInput {
-  private base_element: HTMLCanvasElement;
-  private abort_controller: AbortController | null = null;
+  private _base_element: HTMLCanvasElement;
+  private _abort_controller: AbortController | null = null;
+  private _is_remove_contextmenu = false;
 
+  /*
+    PUBLIC CALLBACKS
+  */
   on_up?: MouseCallback;
   on_down?: MouseCallback;
   on_move?: MouseCallback;
   on_wheel?: (e: WheelEvent) => void;
-
-  private is_remove_contextmenu = false;
+  /*
+  */
 
   constructor(base_element: HTMLCanvasElement, options: MouseInputParams) {
-    this.base_element = base_element;
-    this.is_remove_contextmenu = options.is_remove_context_menu;
+    this._base_element = base_element;
+    this._is_remove_contextmenu = options.is_remove_context_menu;
   }
 
   start(): void {
     // Clean up if already started
-    if (this.abort_controller) this.dispose();
+    if (this._abort_controller) this.dispose();
 
-    this.abort_controller = new AbortController();
-    const { signal } = this.abort_controller;
+    this._abort_controller = new AbortController();
+    const { signal } = this._abort_controller;
 
-    if (this.is_remove_contextmenu) {
-      this.base_element.addEventListener(
+    if (this._is_remove_contextmenu) {
+      this._base_element.addEventListener(
         "contextmenu",
         (e) => this.handle_context_menu(e),
         { signal }
       );
     }
-    this.base_element.addEventListener(
+    this._base_element.addEventListener(
       "mouseup",
       (e) => this.handle_mouseup(e),
       { signal }
     );
-    this.base_element.addEventListener(
+    this._base_element.addEventListener(
       "mousedown",
       (e) => this.handle_mousedown(e),
       { signal }
     );
-    this.base_element.addEventListener(
+    this._base_element.addEventListener(
       "mousemove",
       (e) => this.handle_mousemove(e),
       { signal }
     );
-    this.base_element.addEventListener(
+    this._base_element.addEventListener(
       "wheel",
       (e) => this.handle_mousewheel(e),
       { signal }
@@ -62,9 +66,9 @@ export class MouseInput {
   }
 
   dispose(): void {
-    if (this.abort_controller) {
-      this.abort_controller.abort();
-      this.abort_controller = null;
+    if (this._abort_controller) {
+      this._abort_controller.abort();
+      this._abort_controller = null;
     }
   }
 

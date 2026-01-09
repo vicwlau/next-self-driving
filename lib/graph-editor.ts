@@ -34,6 +34,7 @@ export class GraphEditor implements BaseObject {
   dispose(): void {}
 
   load_graph(): void {
+    // return;
     const data = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || "");
     if (data) {
       this.graph = Graph.Load(data);

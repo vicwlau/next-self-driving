@@ -1,7 +1,7 @@
 "use client";
 import { WorldEditor } from "@/lib/world-editor";
 import { useEffect, useRef, useState } from "react";
-import ActionBar from "./component/action-bar";
+import ActionBar from "../component/action-bar";
 
 export default function Home() {
   const canvas_ref = useRef<HTMLCanvasElement | null>(null);

@@ -57,3 +57,15 @@ export function draw_circle(
   else ctx.stroke();
   ctx.setLineDash([]);
 }
+
+export function draw_text(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  position: Vec2,
+  color = "black",
+  font = "16px Arial"
+) {
+  ctx.fillStyle = color;
+  ctx.font = font;
+  ctx.fillText(text, position.x, position.y);
+}
