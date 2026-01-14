@@ -6,7 +6,7 @@ import { Segment } from "./primitive/segment";
 export class GraphEditor implements BaseObject {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  graph: Graph;
+  graph: Graph = new Graph([], []);
 
   is_dragging: boolean = false;
 
@@ -16,7 +16,7 @@ export class GraphEditor implements BaseObject {
 
   STORAGE_KEY: string = "graph";
 
-  constructor(canvas: HTMLCanvasElement, graph: Graph) {
+  constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     const context = this.canvas.getContext("2d");
     if (!context) {
@@ -24,7 +24,6 @@ export class GraphEditor implements BaseObject {
     }
 
     this.ctx = context;
-    this.graph = graph;
   }
 
   start(): void {
@@ -34,7 +33,6 @@ export class GraphEditor implements BaseObject {
   dispose(): void {}
 
   load_graph(): void {
-    // return;
     const data = JSON.parse(localStorage.getItem(this.STORAGE_KEY) || "");
     if (data) {
       this.graph = Graph.Load(data);
@@ -77,6 +75,15 @@ export class GraphEditor implements BaseObject {
         line_width: 2,
         filled: false,
       });
+
+    // DOODLE BELOW TO TEST IDEAS:
+    // const pt_a = new Point(200, 200);
+    // pt_a.draw(this.ctx, { color: "blue", radius: 5 });
+    // draw_text(this.ctx, "start", pt_a);
+    // translate(pt_a, Math.PI / 2, 100).draw(this.ctx, {
+    //   color: "green",
+    //   radius: 5,
+    // });
   }
 
   handle_mouse_move(point: Point): void {

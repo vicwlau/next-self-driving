@@ -2,17 +2,31 @@ export interface MouseCoords {
   x: number;
   y: number;
 }
-
 export type MouseCallback = (coords: MouseCoords, event: MouseEvent) => void;
-
 export interface MouseInputParams {
   is_remove_context_menu: boolean;
 }
 
+/*
+  USAGE:
+    const mouse_input = new MouseInput(canvas, { is_remove_context_menu: true });
+
+    # assign delegates
+    mouse_input.on_down = (coords, evt) => { ... }
+    mouse_input.on_move = (coords, evt) => { ... }
+
+    # start listening
+    mouse_input.start();
+
+    # dispose when done
+    mouse_input.dispose();
+*/
 export class MouseInput {
   private _base_element: HTMLCanvasElement;
   private _abort_controller: AbortController | null = null;
-  private _is_remove_contextmenu = false;
+
+  // configs
+  private _is_remove_contextmenu = false; // disabled right click menu by default
 
   /*
     PUBLIC CALLBACKS
@@ -21,8 +35,6 @@ export class MouseInput {
   on_down?: MouseCallback;
   on_move?: MouseCallback;
   on_wheel?: (e: WheelEvent) => void;
-  /*
-  */
 
   constructor(base_element: HTMLCanvasElement, options: MouseInputParams) {
     this._base_element = base_element;
@@ -75,23 +87,18 @@ export class MouseInput {
   private get_coords(e: MouseEvent): MouseCoords {
     return { x: e.offsetX, y: e.offsetY };
   }
-
   private handle_context_menu(e: MouseEvent): void {
     e.preventDefault();
   }
-
   private handle_mouseup(e: MouseEvent): void {
     this.on_up?.(this.get_coords(e), e);
   }
-
   private handle_mousedown(e: MouseEvent): void {
     this.on_down?.(this.get_coords(e), e);
   }
-
   private handle_mousemove(e: MouseEvent): void {
     this.on_move?.(this.get_coords(e), e);
   }
-
   private handle_mousewheel(e: WheelEvent): void {
     this.on_wheel?.(e);
   }

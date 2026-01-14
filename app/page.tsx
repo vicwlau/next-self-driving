@@ -2,6 +2,7 @@
 import { WorldEditor } from "@/lib/world-editor";
 import { useEffect, useRef, useState } from "react";
 import ActionBar from "../component/action-bar";
+import RadianVisualizer from "@/lib/sandbox/radians_demo";
 
 export default function Home() {
   const canvas_ref = useRef<HTMLCanvasElement | null>(null);
@@ -38,6 +39,8 @@ export default function Home() {
         ctx={ctx.current!}
         graph_editor={world_editor?.current?.graph_editor}
       />
+      {/* DEMOS */}
+      {/* <RadianVisualizer /> */}
     </div>
   );
 }
