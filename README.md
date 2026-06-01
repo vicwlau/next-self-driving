@@ -14,6 +14,34 @@ This project follows the [Self-driving car simulation playlist](https://www.yout
 - Envelope (road-edge) generation around segments
 - Save / load the graph to `localStorage`
 - Clean separation between the `Graph` (data) and the `GraphEditor` (interaction/rendering)
+- A **self-driving car simulation** (`Self-Driving/`) where cars learn to drive using a from-scratch neural network — see below
+
+## Self-driving car & neural network
+
+The `Self-Driving/` directory adds a driving simulation where AI cars teach themselves to navigate traffic, powered by a small neural network written from scratch (no ML libraries).
+
+### How the car "sees" and decides
+
+- **Sensors** (`sensor.ts`): each AI car casts 5 rays in a 45° fan ahead of it. Every ray measures how close the nearest road border or traffic car is, producing a reading between `0` (far) and `1` (touching).
+- **Brain** (`network.ts`): those 5 readings feed a `NeuralNetwork` shaped `[5, 6, 4]` — 5 sensor inputs, one hidden layer of 6 neurons, and 4 outputs mapping to **forward / left / right / backward**. Each `Level` does a feed-forward pass: it computes a weighted sum of its inputs and fires (`1`) only when that sum clears the neuron's `bias` threshold (otherwise `0`).
+- **Control loop** (`car.ts`): every frame the sensor readings are fed forward through the brain, and the four binary outputs are wired directly to the car's controls.
+
+### How it learns
+
+Training uses mutation rather than backpropagation:
+
+- 1000 AI cars spawn at once (`const.ts`), each with a slightly mutated copy of the brain.
+- The **best car** is whichever has driven furthest. Click **Save** to persist its brain to `localStorage`; on the next run every car loads that brain and all but the best are mutated by the **learning rate** (`NeuralNetwork.mutate`). Repeat to evolve better drivers. **Discard** clears the saved brain to start fresh.
+
+### Visualizing the decision in real time
+
+`visual-network.ts` renders the best car's brain live on a side canvas, so you can watch *why* it makes each decision:
+
+- **Connections** are colored by weight — **yellow** = positive/excitatory ("turn the next neuron on"), **blue** = negative/inhibitory ("suppress it"). Line **brightness** reflects the weight's magnitude (how strong a rule the car learned).
+- **Nodes** light up yellow when that neuron is firing; the dashed ring around each output node visualizes its **bias** (activation threshold).
+- The four output nodes are labeled with arrows (`↑ ← → ↓`) so you can see which control is engaged at any moment.
+
+The driving page (`page.tsx`) wires this together with UI controls for **learning rate**, **difficulty** (traffic density / double lanes), plus **Save**, **Discard**, and **Reset**.
 
 ## Getting started
 
@@ -45,6 +73,7 @@ lib/
   world-editor.ts   Top-level editor wiring canvas, viewport, and graph editor
   graph-editor.ts   Graph interaction and rendering logic
   view-port.ts      Camera: zoom / pan / coordinate transforms
+Self-Driving/       Self-driving car sim: car, sensor, neural network, visualizer
 documentation/      Development notes
 ```
 
