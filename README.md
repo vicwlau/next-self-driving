@@ -1,59 +1,64 @@
-# INTENT
+# next-self-driving
 
-build 3d world editor, road system, machine learning, and expertise in javascript
-SOURCE: [playlist](https://www.youtube.com/playlist?list=PLB0Tybl0UNfZtY5IQl1aNwcoOPJNtnPEO)
+An interactive 2D world / road-network editor built with Next.js, React, and the HTML Canvas API. It's a learning project exploring graph-based geometry, canvas rendering, and the foundations for a self-driving car simulation.
 
-# ACTION ITEMS
+This project follows the [Self-driving car simulation playlist](https://www.youtube.com/playlist?list=PLB0Tybl0UNfZtY5IQl1aNwcoOPJNtnPEO) and reimplements the ideas in TypeScript with a Next.js front end.
 
-- camera span w/ extending line segment intent
-- reusable code in folder: `core` and `primitive`. apply to other projects.
+## Features
 
-# FEATURES | TASKS
+- Draw **points** and connect them with **segments**
+- `hovered` and `selected` interaction states
+- Drag to move points
+- "Intent" preview line for connecting segments or placing a new connected point
+- Zoom, drag, and pan the viewport
+- Envelope (road-edge) generation around segments
+- Save / load the graph to `localStorage`
+- Clean separation between the `Graph` (data) and the `GraphEditor` (interaction/rendering)
 
-- draw `points` and connect `segments`
-- create states for `hovered` and `selected`
-- separation of `graph` and `graph-editor` and `point` when rendering.
-- drag move points
-- intent line for connecting segments or drawing a new point with connected segment
-- zoom | drag | pan,
-- `abortcontroller`
-- how to zoom center to the view position
-- drawing envelops, in which the arc is behind a point and in front of the other point. you start ccw and then to cw
+## Getting started
 
-# LEARNINGS
-
-## math
-
-- `radian`: a radian unit is a unit of based on the physical geometry of a circle rather than an arbitrary number (360 for degree, Babylonians). one radian is the angle created when you wrap the radius of a circle around its circumference. If radius = 1, then circumference is 2 \* pi in radians; 1 radian is approx. 57.2 degrees. Easier representation in calculus: d/dx sin(x) = cos(x). if not, you need to divide by 180.
-  - `degree` is a composite number, highly divisible (halves, thirds, quarters, fifths, sixths, eights). 1/3 circle is 120 degrees vs. `2*pi/3`.
-- `atan2`: why does this work?
-
-```tsx
-export function angle(p: Point): number {
-  return Math.atan2(p.y, p.x);
-}
+```bash
+npm install
+npm run dev
 ```
 
-## graph editor
+Then open [http://localhost:3000](http://localhost:3000).
 
-- when loading ref classes and passing it to a component, it may not be completed on first render. so make a `loaded` state and update upon creation of the class. see `ActionBar`
-- `segment edge-cases`
-  - segment can't have two identical points
-  - when removing a point, also remove all segments contain that point
-  - when removing a segment, use `findIndex` to find element, then `splice` only if return is not -1
-- how does `abort signal` work when creating event listeners
-- refactor to have drag-input and mouse-input as components withint world-edtior
-- put `load()` function within graph since it knows best how to resconstruct its own internal relationships (references between segments and points)
-  - staic load() acts as factory within graph,
-  - `crucial logic` to preserve the `segments`, you must use the same corresponding `points`.
-  - `localstorage` should be placed in `graph-editor` or `world-editor` since they should control WHERE to save, not HOW to save
+Other scripts:
 
-```tsx
-// example code for removing a segment
-remove_segment(segment: Segment) {
-    const index = this.segments.findIndex((s) => s.equals(segment));
-    if (index !== -1) {
-      this.segments.splice(index, 1);
-    }
-  }
+```bash
+npm run build   # production build
+npm run start   # serve the production build
+npm run lint    # run eslint
 ```
+
+## Project structure
+
+```
+app/                Next.js app router (page, layout, styles)
+component/          React UI components (e.g. ActionBar)
+lib/
+  core/             Reusable input handlers (mouse-input, drag-input)
+  math/             Graph data structure and math utilities
+  primitive/        Geometry primitives (point, segment, polygon, envelope, square)
+  sandbox/          Standalone demos (e.g. radian visualizer)
+  world-editor.ts   Top-level editor wiring canvas, viewport, and graph editor
+  graph-editor.ts   Graph interaction and rendering logic
+  view-port.ts      Camera: zoom / pan / coordinate transforms
+documentation/      Development notes
+```
+
+The `lib/core` and `lib/primitive` folders are written to be reusable across other canvas projects.
+
+## Notes
+
+A few concepts worth highlighting from building this:
+
+- **Radians** measure angles by the geometry of a circle itself (a full circle is `2π`), which makes calculus cleaner — `d/dx sin(x) = cos(x)` only holds in radians.
+- **Loading classes into components**: a ref-held class may not exist on the first render, so a `loaded` state flag is used to re-render once it's constructed (see `ActionBar`).
+- **Segment edge cases**: a segment can't have two identical endpoints; removing a point must also remove every segment that touches it; removing a segment uses `findIndex` + `splice` only when the index is found.
+- **Save / load ownership**: `Graph.load()` acts as a factory that rebuilds the references between segments and points (segments must reuse the same point instances). The decision of *where* to persist (`localStorage`) lives in the editor, not the graph.
+
+## License
+
+[MIT](./LICENSE) © Victor Lau
